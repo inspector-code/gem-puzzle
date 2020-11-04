@@ -1,0 +1,19 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "airbnb-base"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "linebreak-style": ["error", "windows"],
+    "semi": ["error", "never"],
+    "no-console": ["error", { "allow": ["log", "warn", "error"] }]
+  }
+}
