@@ -26,22 +26,23 @@ const optimization = () => {
   return config
 }
 
-const filename = (ext) => (isDev ? `[name].${ext}` : `[name].[hash].${ext}`)
+const filename = (ext) => (isDev ? `static/${ext}/[name].${ext}` : `static/${ext}/[name].[hash].${ext}`)
 
-const cssLoaders = (extra) => {
+const cssLoaders = (...extra) => {
   const loaders = [
     {
       loader: MiniCssExtractPlugin.loader,
       options: {
         hmr: isDev,
         reloadAll: true,
+        publicPath: '../../',
       },
     },
     'css-loader',
   ]
 
   if (extra) {
-    loaders.push(extra)
+    loaders.push(...extra)
   }
 
   return loaders
@@ -70,10 +71,9 @@ const jsLoader = () => {
 }
 
 module.exports = {
-  context: path.resolve(__dirname, 'src'),
   mode: 'development',
   entry: {
-    main: ['@babel/polyfill', './index.js'],
+    main: ['@babel/polyfill', './src/index.js'],
   },
   output: {
     filename: filename('js'),
@@ -84,13 +84,16 @@ module.exports = {
   },
   optimization: optimization(),
   devServer: {
+    contentBase: './src',
+    watchContentBase: true,
     port: 8080,
     hot: isDev,
+    open: true,
   },
   devtool: isDev ? 'source-map' : false,
   plugins: [
     new HTMLWebpackPlugin({
-      template: './index.html',
+      template: './src/index.html',
       minify: {
         collapseWhitespace: isProd,
       },
@@ -99,8 +102,8 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'assets/**/*',
-          to: '/',
+          from: './src/assets/icons/favicon.png',
+          to: './static/media',
         },
       ],
     }),
@@ -119,13 +122,39 @@ module.exports = {
         use: cssLoaders('sass-loader'),
       },
       {
-        test: /\.(png|jpg|svg|gif|ttf|woff|woff2|eot)$/,
-        use: ['file-loader'],
+        test: /\.(png|jpg|jpeg|svg|gif|tiff|bmp)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              outputPath: './static/media',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(ttf|woff|woff2|eot)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              outputPath: './static/media',
+            },
+          },
+        ],
       },
       {
         test: /\.js$/,
         exclude: /node_modules/,
         use: jsLoader(),
+      },
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: 'html-loader',
+          },
+        ],
       },
     ],
   },
