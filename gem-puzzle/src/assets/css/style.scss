@@ -5,16 +5,26 @@
   width: 400px;
   margin: 0 auto;
 
+  .header {
+    text-align: center;
+  }
+
+  .info {
+    display: flex;
+    justify-content: space-between;
+  }
+
   .field {
     height: 400px;
     border: 1px solid black;
     border-radius: 10px;
     position: relative;
+    overflow: hidden;
 
     .cell {
       width: 100px;
       height: 100px;
-      border: 3px solid blue;
+      border: 2px solid darkolivegreen;
       border-radius: 10px;
       position: absolute;
       font-size: 60px;
@@ -23,6 +33,28 @@
       align-items: center;
       transition: all .3s;
       cursor: pointer;
+    }
+
+    .start-menu, .finish-menu {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(43, 43, 43, 0.8);
+      z-index: 99;
+    }
+
+    .menu-item, .finish-menu-button {
+      color: red;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .menu-item:hover, .finish-menu-button:hover {
+      color: yellow;
     }
   }
 }
