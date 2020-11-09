@@ -35,25 +35,42 @@
       cursor: pointer;
     }
 
-    .start-menu, .finish-menu {
+    .finish-menu-header {
+      color: red;
+      font-size: 2rem;
+    }
+
+    .finish-menu-item {
+      color: red;
+      font-size: 1.5rem;
+    }
+
+    .start-menu, .finish-menu, .pause-menu {
       height: 100%;
       width: 100%;
       position: absolute;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       background: rgba(43, 43, 43, 0.8);
+      transition: .5s;
+      opacity: 1;
       z-index: 99;
     }
 
-    .menu-item, .finish-menu-button {
+    .menu-hidden {
+      opacity: 0;
+    }
+
+    .start-menu-button, .finish-menu-button {
       color: red;
       font-size: 2rem;
       cursor: pointer;
       z-index: 100;
     }
 
-    .menu-item:hover, .finish-menu-button:hover {
+    .start-menu-button:hover, .finish-menu-button:hover {
       color: yellow;
     }
   }

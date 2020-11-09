@@ -1,15 +1,20 @@
 import create from './utils/create'
 
 export default class GemPuzzle {
-  constructor() {
+  constructor(fieldSize) {
     this.field = create('div', 'field')
-    this.startMenu = create('div', 'start-menu', create('div', 'menu-item', 'START'))
+    this.startMenu = create('div', 'start-menu', create('div', 'start-menu-button', 'START'))
     this.finishMenu = create('div', 'finish-menu', [
+      create('div', 'finish-menu-header', 'VICTORY'),
       create('div', 'finish-menu-item'),
       create('div', 'finish-menu-button', 'OK'),
     ])
+    this.pauseMenu = create('div', 'pause-menu', 'Game paused')
+    this.pauseButton = create('button', 'pause-button', 'Pause')
+    this.resetButton = create('button', 'reset-button', 'Reset')
     this.displayTime = create('div', 'timer', '00:00')
     this.displayMoves = create('div', 'moves', '0')
+    this.fieldSize = fieldSize
     this.movesCounter = 0
     this.empty = {
       value: 0,
@@ -18,15 +23,16 @@ export default class GemPuzzle {
     }
     this.cellSize = 100
     this.cells = []
-    this.numbers = [...Array(15).keys()].map((i) => i + 1)
-    // .sort(() => Math.random() - 0.5)
     this.min = 0
     this.sec = 0
+    this.timerOn = false
   }
 
-  generateField(fieldSize) {
+  generateField() {
+    this.numbers = [...Array(15).keys()].map((i) => i + 1).sort(() => Math.random() - 0.5)
     this.field.innerHTML = ''
-    for (let i = 0; i <= fieldSize - 1; i += 1) {
+
+    for (let i = 0; i <= this.fieldSize - 1; i += 1) {
       const value = this.numbers[i]
       const cell = create('div', 'cell', `${value}`)
 
@@ -45,10 +51,24 @@ export default class GemPuzzle {
 
       this.field.append(cell)
 
-      cell.addEventListener('click', () => {
+      cell.onclick = () => {
         this.move(i)
-      })
+      }
     }
+
+    this.field.prepend(this.startMenu)
+    this.pauseButton.setAttribute('disabled', 'disabled')
+    this.startMenu.children[0].onclick = () => {
+      this.timerOn = true
+      this.timer()
+      this.startMenu.classList.add('menu-hidden')
+      setTimeout(() => {
+        this.field.children[0].remove()
+        this.startMenu.classList.remove('menu-hidden')
+      }, 500)
+      this.pauseButton.removeAttribute('disabled')
+    }
+
     return this
   }
 
@@ -77,21 +97,22 @@ export default class GemPuzzle {
     this.displayMoves.innerText = this.movesCounter
 
     if (isFinished) {
-      this.timer(false)
+      this.pauseButton.setAttribute('disabled', 'disabled')
+      this.timerOn = false
+      this.timer()
       this.field.prepend(this.finishMenu)
-      this.finishMenu.children[0].innerText = `U WON ${this.displayTime.innerHTML}, moves: ${this.movesCounter}`
-      this.finishMenu.children[1].onclick = () => {
+      this.finishMenu.children[1].innerText = `Time: ${this.displayTime.innerText}, moves: ${this.movesCounter}`
+      this.finishMenu.children[2].onclick = () => {
+        this.pauseButton.removeAttribute('disabled')
         this.field.children[0].remove()
-        this.clearTimer()
-        this.movesCounter = 0
-        this.displayMoves.innerText = '0'
-        this.displayTime.innerText = '00:00'
-        this.timer(true)
+        this.clear()
+        this.timerOn = true
+        this.timer()
       }
     }
   }
 
-  timer(isOn) {
+  timer() {
     const tick = () => {
       this.sec += 1
       if (this.sec >= 60) {
@@ -114,30 +135,55 @@ export default class GemPuzzle {
       }
     }
 
-    if (isOn) {
+    if (this.timerOn) {
       this.timerInterval = setInterval(tick, 1000)
     } else {
       clearInterval(this.timerInterval)
     }
   }
 
-  clearTimer() {
+  clear() {
     this.min = 0
     this.sec = 0
+    this.movesCounter = 0
+    this.displayMoves.innerText = '0'
+    this.displayTime.innerText = '00:00'
+    this.timerOn = false
+    this.empty = {
+      value: 0,
+      left: 3,
+      top: 3,
+    }
+    this.cells = []
   }
 
   init() {
-    this.field.prepend(this.startMenu)
-    this.startMenu.children[0].onclick = () => {
-      this.timer(true)
-      this.field.children[0].remove()
+    this.generateField(this.fieldSize)
+
+    this.pauseButton.onclick = () => {
+      if (this.timerOn) {
+        this.timerOn = false
+        this.pauseButton.innerText = 'Resume'
+        this.field.prepend(this.pauseMenu)
+      } else {
+        this.timerOn = true
+        this.pauseButton.innerText = 'Pause'
+        this.field.children[0].remove()
+      }
+      this.timer()
+    }
+
+    this.resetButton.onclick = () => {
+      this.clear()
+      this.generateField()
+      this.timer()
     }
 
     this.container = create('div', 'gem-puzzle', [
       create('div', 'header', 'Gem puzzle!'),
       create('div', 'info', [this.displayTime, this.displayMoves]),
       this.field,
-      create('div', 'controls'),
+      create('div', 'controls', [this.pauseButton, this.resetButton]),
     ])
     document.body.append(this.container)
   }
