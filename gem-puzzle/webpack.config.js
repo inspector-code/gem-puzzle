@@ -105,6 +105,10 @@ module.exports = {
           from: './src/assets/icons/favicon.png',
           to: './static/media',
         },
+        {
+          from: './src/assets/img',
+          to: './static/media/img',
+        },
       ],
     }),
     new MiniCssExtractPlugin({
@@ -138,7 +142,18 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              outputPath: './static/media',
+              outputPath: './static/media/fonts',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.mp3$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              outputPath: './static/media/audio',
             },
           },
         ],
