@@ -1,5 +1,6 @@
 import create from './utils/create'
-import audio from '../assets/sounds/chpok.mp3'
+import { get, set } from './utils/storage'
+import audio from '../sounds/chpok.mp3'
 
 export default class GemPuzzle {
   constructor(fieldSize) {
@@ -18,6 +19,8 @@ export default class GemPuzzle {
     this.pauseButton = create('button', 'pause-button', 'Pause')
     this.resetButton = create('button', 'reset-button', 'Reset')
     this.soundButton = create('button', 'sound-button', 'Sound Off')
+    this.saveButton = create('button', 'save-button', 'Save')
+    this.loadButton = create('button', 'load-button', 'Load')
     this.displayTime = create('div', 'timer', '00:00')
     this.displayMoves = create('div', 'moves', '0')
     this.selectList = create('select', 'select-list', [
@@ -47,7 +50,7 @@ export default class GemPuzzle {
 
   generateField() {
     this.numbers = [...Array(this.fieldSize).keys()].map((i) => i + 1)
-    //  .sort(() => Math.random() - 0.5)
+      .sort(() => Math.random() - 0.5)
     this.field.innerHTML = ''
     const randomImg = Math.floor(Math.random() * 10) + 1
 
@@ -56,7 +59,7 @@ export default class GemPuzzle {
       const cell = create('div', 'cell', `${value}`)
       cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
       cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
-      cell.style.backgroundImage = `url(../assets/img/${this.fieldSize + 1}/${randomImg}/${value}.jpg)`
+      cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${randomImg}/${value}.jpg)`
 
       const left = i % Math.sqrt(this.fieldSize + 1)
       const top = (i - left) / Math.sqrt(this.fieldSize + 1)
@@ -167,6 +170,7 @@ export default class GemPuzzle {
     }
 
     if (this.timerOn) {
+      clearInterval(this.timerInterval)
       this.timerInterval = setInterval(tick, 1000)
     } else {
       clearInterval(this.timerInterval)
@@ -237,11 +241,41 @@ export default class GemPuzzle {
       this.generateField()
     }
 
+    this.saveButton.onclick = () => {
+      set('empty', this.empty)
+      const savedCells = []
+      this.cells.forEach(({ value, left, top }) => savedCells.push({ value, left, top }))
+      set('cells', savedCells)
+      set('timeAndMoves', [this.min, this.sec, this.movesCounter])
+      set('fieldSize', this.fieldSize)
+    }
+
+    this.loadButton.onclick = () => {
+      this.empty = get('empty')
+      const savedCells = get('cells')
+      this.cells.forEach((i) => {
+        const cellObj = savedCells.find((item) => item.value === i.value)
+        // eslint-disable-next-line no-param-reassign
+        i.left = cellObj.left
+        // eslint-disable-next-line no-param-reassign
+        i.top = cellObj.top
+        // eslint-disable-next-line no-param-reassign
+        i.element.style.left = `${cellObj.left * this.cellSize}%`
+        // eslint-disable-next-line no-param-reassign
+        i.element.style.top = `${cellObj.top * this.cellSize}%`
+      })
+      const [min, sec, moves] = get('timeAndMoves')
+      this.min = min
+      this.sec = sec
+      this.movesCounter = moves
+      this.displayMoves.innerText = moves
+    }
+
     this.container = create('div', 'gem-puzzle', [
       create('div', 'header', 'Gem puzzle!'),
       create('div', 'info', [this.displayTime, this.displayMoves]),
       this.field,
-      create('div', 'controls', [this.pauseButton, this.resetButton, this.soundButton, this.selectList]),
+      create('div', 'controls', [this.pauseButton, this.resetButton, this.soundButton, this.saveButton, this.loadButton, this.selectList]),
       this.soundContainer,
     ])
     document.body.append(this.container)

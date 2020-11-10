@@ -26,7 +26,7 @@ const optimization = () => {
   return config
 }
 
-const filename = (ext) => (isDev ? `static/${ext}/[name].${ext}` : `static/${ext}/[name].[hash].${ext}`)
+const filename = (ext) => (isDev ? `assets/${ext}/[name].${ext}` : `assets/${ext}/[name].[hash].${ext}`)
 
 const cssLoaders = (...extra) => {
   const loaders = [
@@ -35,7 +35,6 @@ const cssLoaders = (...extra) => {
       options: {
         hmr: isDev,
         reloadAll: true,
-        publicPath: '../../',
       },
     },
     'css-loader',
@@ -73,7 +72,7 @@ const jsLoader = () => {
 module.exports = {
   mode: 'development',
   entry: {
-    main: ['@babel/polyfill', './src/index.js'],
+    main: ['@babel/polyfill', path.resolve(__dirname, 'src/assets/js/index.js')],
   },
   output: {
     filename: filename('js'),
@@ -84,7 +83,7 @@ module.exports = {
   },
   optimization: optimization(),
   devServer: {
-    contentBase: './src',
+    contentBase: 'src',
     watchContentBase: true,
     port: 8080,
     hot: isDev,
@@ -103,11 +102,11 @@ module.exports = {
       patterns: [
         {
           from: './src/assets/icons/favicon.png',
-          to: './static/media',
+          to: './assets/icons',
         },
         {
           from: './src/assets/img',
-          to: './static/media/img',
+          to: './assets/img',
         },
       ],
     }),
@@ -131,7 +130,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              outputPath: './static/media',
+              outputPath: './assets/img',
             },
           },
         ],
@@ -142,7 +141,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              outputPath: './static/media/fonts',
+              outputPath: './assets/fonts',
             },
           },
         ],
@@ -153,7 +152,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              outputPath: './static/media/audio',
+              outputPath: './assets/sounds',
             },
           },
         ],
