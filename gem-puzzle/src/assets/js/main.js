@@ -46,20 +46,51 @@ export default class GemPuzzle {
     this.sec = 0
     this.timerOn = false
     this.soundOn = true
+    this.randomImage = null
+    this.score = []
+  }
+
+  generateArray() {
+    const randomArray = [...Array(this.fieldSize).keys()].map((i) => i + 1)
+    //  .sort(() => Math.random() - 0.5)
+    randomArray.push(0)
+
+    let inv = 0
+    for (let i = 0; i < this.fieldSize + 1; i += 1) {
+      if (randomArray[i]) {
+        for (let j = 0; j < i; j += 1) {
+          if (randomArray[j] > randomArray[i]) {
+            inv += 1
+          }
+        }
+      }
+    }
+    for (let i = 0; i < this.fieldSize + 1; i += 1) {
+      if (randomArray[i] === 0) {
+        inv += Math.floor(1 + (i / Math.sqrt(this.fieldSize + 1)))
+      }
+    }
+
+    if (((this.fieldSize + 1) % 2 === 0) && (inv % 2 === 0)) {
+      return randomArray
+    }
+    if (((this.fieldSize + 1) % 2 !== 0) && (inv % 2 !== 0)) {
+      return randomArray
+    }
+    return this.generateArray()
   }
 
   generateField() {
-    this.numbers = [...Array(this.fieldSize).keys()].map((i) => i + 1)
-      .sort(() => Math.random() - 0.5)
+    this.numbers = this.generateArray()
     this.field.innerHTML = ''
-    const randomImg = Math.floor(Math.random() * 10) + 1
+    this.randomImage = Math.floor(Math.random() * 10) + 1
 
     for (let i = 0; i <= this.fieldSize - 1; i += 1) {
       const value = this.numbers[i]
       const cell = create('div', 'cell', `${value}`)
       cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
       cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
-      cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${randomImg}/${value}.jpg)`
+      cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${this.randomImage}/${value}.jpg)`
 
       const left = i % Math.sqrt(this.fieldSize + 1)
       const top = (i - left) / Math.sqrt(this.fieldSize + 1)
@@ -88,7 +119,7 @@ export default class GemPuzzle {
       this.timer()
       this.startMenu.classList.add('menu-hidden')
       setTimeout(() => {
-        this.field.children[0].remove()
+        this.startMenu.remove()
         this.startMenu.classList.remove('menu-hidden')
       }, 500)
       this.pauseButton.removeAttribute('disabled')
@@ -137,9 +168,18 @@ export default class GemPuzzle {
         this.finishMenu.classList.remove('menu-hidden')
       }, 50)
       this.finishMenu.children[1].innerText = `Time: ${this.displayTime.innerText}, moves: ${this.movesCounter}`
+
+      this.score.push({
+        game: `${Math.sqrt(+this.selectList.value + 1)}x${Math.sqrt(+this.selectList.value + 1)}`,
+        displayTime: this.displayTime.innerText,
+        moves: this.movesCounter,
+        score: ((this.min * 60) + this.sec) * this.movesCounter,
+      })
+      set('score', this.score)
+
       this.finishMenu.children[2].onclick = () => {
         this.pauseButton.removeAttribute('disabled')
-        this.field.children[0].remove()
+        this.finishMenu.remove()
         this.clear()
         this.generateField()
       }
@@ -213,7 +253,7 @@ export default class GemPuzzle {
         this.pauseMenu.classList.add('menu-hidden')
         setTimeout(() => {
           this.pauseMenu.classList.remove('menu-hidden')
-          this.field.children[0].remove()
+          this.pauseMenu.remove()
         }, 500)
       }
       this.timer()
@@ -248,27 +288,51 @@ export default class GemPuzzle {
       set('cells', savedCells)
       set('timeAndMoves', [this.min, this.sec, this.movesCounter])
       set('fieldSize', this.fieldSize)
+      set('randomImage', this.randomImage)
     }
 
     this.loadButton.onclick = () => {
       this.empty = get('empty')
+      this.fieldSize = get('fieldSize')
+      this.cellSize = 100 / Math.sqrt(this.fieldSize + 1)
+      this.randomImage = get('randomImage')
+
       const savedCells = get('cells')
-      this.cells.forEach((i) => {
-        const cellObj = savedCells.find((item) => item.value === i.value)
-        // eslint-disable-next-line no-param-reassign
-        i.left = cellObj.left
-        // eslint-disable-next-line no-param-reassign
-        i.top = cellObj.top
-        // eslint-disable-next-line no-param-reassign
-        i.element.style.left = `${cellObj.left * this.cellSize}%`
-        // eslint-disable-next-line no-param-reassign
-        i.element.style.top = `${cellObj.top * this.cellSize}%`
+      const newCells = []
+      savedCells.forEach((i, index) => {
+        const cell = create('div', 'cell', `${i.value}`)
+        cell.style.left = `${i.left * this.cellSize}%`
+        cell.style.top = `${i.top * this.cellSize}%`
+        cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
+        cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
+        cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${this.randomImage}/${i.value}.jpg)`
+        cell.onclick = () => {
+          this.move(index)
+        }
+        newCells.push({
+          value: i.value,
+          left: i.left,
+          top: i.top,
+          element: cell,
+        })
       })
+      this.cells = newCells
+
+      this.field.innerHTML = ''
+      this.cells.forEach(({ element }) => {
+        this.field.append(element)
+      })
+
       const [min, sec, moves] = get('timeAndMoves')
       this.min = min
       this.sec = sec
+      this.timerOn = true
+      this.timer()
+      this.pauseButton.innerText = 'Pause'
+      this.pauseButton.removeAttribute('disabled')
       this.movesCounter = moves
       this.displayMoves.innerText = moves
+      this.selectList.value = this.fieldSize
     }
 
     this.container = create('div', 'gem-puzzle', [
