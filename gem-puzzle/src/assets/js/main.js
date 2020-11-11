@@ -12,6 +12,11 @@ export default class GemPuzzle {
       create('div', 'finish-menu-item'),
       create('div', 'finish-menu-button', 'OK'),
     ])
+    this.scoreMenu = create('div', 'score-menu', [
+      create('div', 'score-menu-header', 'Score'),
+      create('div', 'score-menu-container'),
+      create('div', 'score-menu-button', 'Ok'),
+    ])
     this.soundContainer = create('div', 'sound-container', [
       create('audio', null, null, null, ['src', audio]),
     ])
@@ -21,6 +26,7 @@ export default class GemPuzzle {
     this.soundButton = create('button', 'sound-button', 'Sound Off')
     this.saveButton = create('button', 'save-button', 'Save')
     this.loadButton = create('button', 'load-button', 'Load')
+    this.scoreButton = create('button', 'score-button', 'Score')
     this.displayTime = create('div', 'timer', '00:00')
     this.displayMoves = create('div', 'moves', '0')
     this.selectList = create('select', 'select-list', [
@@ -47,12 +53,12 @@ export default class GemPuzzle {
     this.timerOn = false
     this.soundOn = true
     this.randomImage = null
-    this.score = []
+    this.score = get('score') || []
   }
 
   generateArray() {
     const randomArray = [...Array(this.fieldSize).keys()].map((i) => i + 1)
-    //  .sort(() => Math.random() - 0.5)
+      .sort(() => Math.random() - 0.5)
     randomArray.push(0)
 
     let inv = 0
@@ -292,54 +298,90 @@ export default class GemPuzzle {
     }
 
     this.loadButton.onclick = () => {
-      this.empty = get('empty')
-      this.fieldSize = get('fieldSize')
-      this.cellSize = 100 / Math.sqrt(this.fieldSize + 1)
-      this.randomImage = get('randomImage')
-
       const savedCells = get('cells')
-      const newCells = []
-      savedCells.forEach((i, index) => {
-        const cell = create('div', 'cell', `${i.value}`)
-        cell.style.left = `${i.left * this.cellSize}%`
-        cell.style.top = `${i.top * this.cellSize}%`
-        cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
-        cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
-        cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${this.randomImage}/${i.value}.jpg)`
-        cell.onclick = () => {
-          this.move(index)
-        }
-        newCells.push({
-          value: i.value,
-          left: i.left,
-          top: i.top,
-          element: cell,
+      if (savedCells) {
+        this.empty = get('empty')
+        this.fieldSize = get('fieldSize')
+        this.cellSize = 100 / Math.sqrt(this.fieldSize + 1)
+        this.randomImage = get('randomImage')
+
+        const newCells = []
+
+        savedCells.forEach((i, index) => {
+          const cell = create('div', 'cell', `${i.value}`)
+          cell.style.left = `${i.left * this.cellSize}%`
+          cell.style.top = `${i.top * this.cellSize}%`
+          cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
+          cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
+          cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${this.randomImage}/${i.value}.jpg)`
+          cell.onclick = () => {
+            this.move(index)
+          }
+          newCells.push({
+            value: i.value,
+            left: i.left,
+            top: i.top,
+            element: cell,
+          })
         })
-      })
-      this.cells = newCells
+        this.cells = newCells
 
-      this.field.innerHTML = ''
-      this.cells.forEach(({ element }) => {
-        this.field.append(element)
-      })
+        this.field.innerHTML = ''
+        this.cells.forEach(({ element }) => {
+          this.field.append(element)
+        })
 
-      const [min, sec, moves] = get('timeAndMoves')
-      this.min = min
-      this.sec = sec
-      this.timerOn = true
-      this.timer()
-      this.pauseButton.innerText = 'Pause'
-      this.pauseButton.removeAttribute('disabled')
-      this.movesCounter = moves
-      this.displayMoves.innerText = moves
-      this.selectList.value = this.fieldSize
+        const [min, sec, moves] = get('timeAndMoves')
+        this.min = min
+        this.sec = sec
+        this.timerOn = true
+        this.timer()
+        this.pauseButton.innerText = 'Pause'
+        this.pauseButton.removeAttribute('disabled')
+        this.movesCounter = moves
+        this.displayMoves.innerText = moves
+        this.selectList.value = this.fieldSize
+      }
+    }
+
+    this.scoreButton.onclick = () => {
+      this.scoreMenu.children[1].innerHTML = ''
+      const scoreArray = get('score')
+
+      if (scoreArray) {
+        scoreArray.sort((a, b) => (a.score > b.score ? 1 : -1))
+        scoreArray.splice(10)
+        scoreArray.forEach(({ game, displayTime, moves }) => {
+          const element = create('div', 'score-item', `<b>Game:</b> ${game}, <b>time:</b> ${displayTime}, <b>moves:</b> ${moves}`)
+          this.scoreMenu.children[1].append(element)
+        })
+      } else {
+        this.scoreMenu.children[1].innerText = 'No winners yet :('
+      }
+
+      this.scoreMenu.classList.add('menu-hidden')
+      this.field.append(this.scoreMenu)
+      setTimeout(() => {
+        this.scoreMenu.classList.remove('menu-hidden')
+      }, 50)
+
+      this.scoreMenu.children[2].onclick = () => {
+        this.scoreMenu.classList.add('menu-hidden')
+        setTimeout(() => {
+          this.scoreMenu.remove()
+          this.scoreMenu.classList.remove('menu-hidden')
+        }, 500)
+      }
     }
 
     this.container = create('div', 'gem-puzzle', [
       create('div', 'header', 'Gem puzzle!'),
       create('div', 'info', [this.displayTime, this.displayMoves]),
       this.field,
-      create('div', 'controls', [this.pauseButton, this.resetButton, this.soundButton, this.saveButton, this.loadButton, this.selectList]),
+      create('div', 'controls', [
+        this.pauseButton, this.resetButton, this.soundButton, this.saveButton,
+        this.loadButton, this.scoreButton, this.selectList,
+      ]),
       this.soundContainer,
     ])
     document.body.append(this.container)

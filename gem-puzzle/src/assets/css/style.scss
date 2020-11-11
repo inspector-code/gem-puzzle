@@ -46,7 +46,7 @@
       font-size: 1.5rem;
     }
 
-    .start-menu, .finish-menu, .pause-menu {
+    .start-menu, .finish-menu, .pause-menu, .score-menu {
       height: 100%;
       width: 100%;
       position: absolute;
@@ -64,7 +64,7 @@
       opacity: 0;
     }
 
-    .start-menu-button, .finish-menu-button {
+    .start-menu-button, .finish-menu-button, .score-menu-button {
       color: red;
       font-size: 2rem;
       cursor: pointer;
