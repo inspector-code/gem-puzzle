@@ -27,6 +27,8 @@
     box-shadow: 0 0 5px rgba(0,0,0,0.5);
     overflow: hidden;
     background: white;
+    border-radius: 5px;
+    border: 3px solid white;
 
     .cell {
       font-family: 'Quicksand', sans-serif;
@@ -46,16 +48,58 @@
     }
 
     .finish-menu-header {
-      color: red;
+      font-family: 'Monoton', cursive;
+      color: white;
       font-size: 2rem;
+      margin-bottom: 20px;
     }
 
     .finish-menu-item {
-      color: red;
+      font-family: 'Quicksand', sans-serif;
+      color: white;
       font-size: 1.5rem;
+      margin-bottom: 20px;
     }
 
-    .start-menu, .finish-menu, .pause-menu, .score-menu {
+    .pause-menu-header {
+      font-family: 'Monoton', cursive;
+      color: yellow;
+      font-size: 2rem;
+      padding: 10px;
+      border: 2px solid white;
+    }
+
+    .score-menu-header {
+      font-family: 'Monoton', cursive;
+      font-size: 1.6rem;
+      color: white;
+      padding: 10px;
+      border: 2px solid white;
+      margin-bottom: 20px;
+    }
+
+    .score-menu-container {
+      font-family: 'Quicksand', sans-serif;
+      color: white;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+
+      .score-item {
+        line-height: 140%;
+      }
+    }
+
+    .score-menu-button, .finish-menu-button {
+      font-family: 'Monoton', cursive;
+      font-size: 1.6rem;
+      color: yellow;
+      cursor: pointer;
+      transition: .5s;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .menu, .score-menu {
       height: 100%;
       width: 100%;
       position: absolute;
@@ -67,6 +111,10 @@
       transition: .5s;
       opacity: 1;
       z-index: 99;
+    }
+
+    .score-menu {
+      z-index: 300;
     }
 
     .menu-hidden {
@@ -85,36 +133,34 @@
       transition: .5s;
       opacity: 1;
       transform: scale(1);
+      animation: pulse 1.5s infinite alternate;
     }
 
-    .start-menu-button:hover {
+    @keyframes pulse {
+      0% {
+        transform: scale(0.8);
+        color: white;
+      }
+
+      100% {
+        transform: scale(1);
+        color: yellow;
+      }
+    }
+
+    .start-menu-button:hover, .score-menu-button:hover, .finish-menu-button:hover {
       transform: scale(0.8);
       color: white;
     }
 
-    .start-menu-button:active {
+    .start-menu-button:active, .score-menu-button:active, .finish-menu-button:active {
       opacity: 0;
-    }
-
-    .finish-menu-button, .score-menu-button {
-      color: red;
-      font-size: 2rem;
-      cursor: pointer;
-      z-index: 100;
-    }
-
-    .finish-menu-button:hover {
-      color: yellow;
     }
   }
 
   .controls {
-    margin-top: 15px;
+    margin-top: 20px;
     font-family: 'Quicksand', sans-serif;
-
-    .common-button {
-      margin-bottom: 5px;
-    }
 
     .common-button {
       padding: 3px 6px;
@@ -125,6 +171,10 @@
       box-shadow: 0 0 3px rgba(0,0,0,0.5);
       outline: none;
       transition: .2s;
+    }
+
+    .common-button:disabled {
+      cursor: default;
     }
 
     .common-button:hover:not(:disabled) {
@@ -150,6 +200,7 @@
         background: transparent;
         outline: none;
         font-size: 1.2rem;
+        cursor: pointer;
       }
     }
   }

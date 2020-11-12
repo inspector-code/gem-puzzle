@@ -6,8 +6,8 @@ export default class GemPuzzle {
   constructor(fieldSize) {
     // Elements
     this.field = create('div', 'field')
-    this.startMenu = create('div', 'start-menu', create('div', 'start-menu-button', 'START'))
-    this.finishMenu = create('div', 'finish-menu', [
+    this.startMenu = create('div', 'menu', create('div', 'start-menu-button', 'START'))
+    this.finishMenu = create('div', 'menu', [
       create('div', 'finish-menu-header', 'VICTORY'),
       create('div', 'finish-menu-item'),
       create('div', 'finish-menu-button', 'OK'),
@@ -17,17 +17,20 @@ export default class GemPuzzle {
       create('div', 'score-menu-container'),
       create('div', 'score-menu-button', 'Ok'),
     ])
+    this.pauseMenu = create('div', 'menu', create('div', 'pause-menu-header', 'Game Paused'))
     this.soundContainer = create('div', 'sound-container', [
       create('audio', null, null, null, ['src', audio]),
     ])
-    this.pauseMenu = create('div', 'pause-menu', create('div', 'pause-menu-header', 'Game paused'))
     this.pauseButton = create('button', 'common-button', 'Pause')
     this.resetButton = create('button', 'common-button', 'Reset')
     this.soundButton = create('button', 'common-button', 'Off sound')
     this.saveButton = create('button', 'common-button', 'Save')
     this.loadButton = create('button', 'common-button', 'Load')
     this.scoreButton = create('button', 'common-button', 'Score')
-    this.displayTime = create('div', 'timer', 'Time: 00:00')
+    this.displayTime = create('div', 'timer', [
+      create('span', 'timer-text', 'Time: '),
+      create('span', 'timer-digits', '00:00'),
+    ])
     this.displayMoves = create('div', 'moves', '0 moves')
     this.selectList = create('select', 'select-list', [
       create('option', null, '3x3', null, ['value', '8']),
@@ -177,11 +180,11 @@ export default class GemPuzzle {
       setTimeout(() => {
         this.finishMenu.classList.remove('menu-hidden')
       }, 50)
-      this.finishMenu.children[1].innerText = `Time: ${this.displayTime.innerText}, moves: ${this.movesCounter}`
+      this.finishMenu.children[1].innerText = `Time: ${this.displayTime.children[1].innerText}, moves: ${this.movesCounter}`
 
       this.score.push({
         game: `${Math.sqrt(+this.selectList.value + 1)}x${Math.sqrt(+this.selectList.value + 1)}`,
-        displayTime: this.displayTime.innerText,
+        displayTime: this.displayTime.children[1].innerText,
         moves: this.movesCounter,
         score: ((this.min * 60) + this.sec) * this.movesCounter,
       })
@@ -208,14 +211,14 @@ export default class GemPuzzle {
       }
       if (this.sec < 10) {
         if (this.min < 10) {
-          this.displayTime.innerText = `Time: 0${this.min}:0${this.sec}`
+          this.displayTime.children[1].innerText = `0${this.min}:0${this.sec}`
         } else {
-          this.displayTime.innerText = `Time:${this.min}:0${this.sec}`
+          this.displayTime.children[1].innerText = `${this.min}:0${this.sec}`
         }
       } else if (this.min < 10) {
-        this.displayTime.innerText = `Time: 0${this.min}:${this.sec}`
+        this.displayTime.children[1].innerText = `0${this.min}:${this.sec}`
       } else {
-        this.displayTime.innerText = `Time: ${this.min}:${this.sec}`
+        this.displayTime.children[1].innerText = `${this.min}:${this.sec}`
       }
     }
 
@@ -232,7 +235,7 @@ export default class GemPuzzle {
     this.sec = 0
     this.movesCounter = 0
     this.displayMoves.innerText = '0 moves'
-    this.displayTime.innerText = 'Time: 00:00'
+    this.displayTime.children[1].innerText = '00:00'
     this.timerOn = false
     this.timer()
     this.empty = {
@@ -368,7 +371,7 @@ export default class GemPuzzle {
       }
 
       this.scoreMenu.classList.add('menu-hidden')
-      this.field.append(this.scoreMenu)
+      this.field.prepend(this.scoreMenu)
       setTimeout(() => {
         this.scoreMenu.classList.remove('menu-hidden')
       }, 50)
