@@ -7,24 +7,32 @@
   margin: 0 auto;
 
   .header {
+    font-family: 'Monoton', cursive;
+    font-size: 2.5rem;
     text-align: center;
+    margin: 20px 0;
   }
 
   .info {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 1.2rem;
     display: flex;
     justify-content: space-between;
+    margin-bottom: 15px;
   }
 
   .field {
     height: 400px;
-    border: 1px solid black;
     position: relative;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
     overflow: hidden;
+    background: white;
 
     .cell {
-      width: 25%;
-      height: 25%;
-      border: 1px solid darkolivegreen;
+      font-family: 'Quicksand', sans-serif;
+      color: white;
+      text-shadow: 0 0 2px black;
+      border: 2px solid white;
       border-radius: 5px;
       position: absolute;
       font-size: 2rem;
@@ -34,6 +42,7 @@
       transition: all .3s;
       cursor: pointer;
       background-size: 100% 100%;
+      transform: scale(1) rotate(0);
     }
 
     .finish-menu-header {
@@ -64,15 +73,84 @@
       opacity: 0;
     }
 
-    .start-menu-button, .finish-menu-button, .score-menu-button {
+    .cell-hidden {
+      transform: scale(0.5) rotate(180deg);
+    }
+
+    .start-menu-button {
+      font-family: 'Monoton', cursive;
+      font-size: 2.5rem;
+      color: yellow;
+      cursor: pointer;
+      transition: .5s;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .start-menu-button:hover {
+      transform: scale(0.8);
+      color: white;
+    }
+
+    .start-menu-button:active {
+      opacity: 0;
+    }
+
+    .finish-menu-button, .score-menu-button {
       color: red;
       font-size: 2rem;
       cursor: pointer;
       z-index: 100;
     }
 
-    .start-menu-button:hover, .finish-menu-button:hover {
+    .finish-menu-button:hover {
       color: yellow;
+    }
+  }
+
+  .controls {
+    margin-top: 15px;
+    font-family: 'Quicksand', sans-serif;
+
+    .common-button {
+      margin-bottom: 5px;
+    }
+
+    .common-button {
+      padding: 3px 6px;
+      margin: 0 4px 10px;
+      cursor: pointer;
+      background: white;
+      border: none;
+      box-shadow: 0 0 3px rgba(0,0,0,0.5);
+      outline: none;
+      transition: .2s;
+    }
+
+    .common-button:hover:not(:disabled) {
+      background: lightgray;
+    }
+
+    .common-button:active:not(:disabled) {
+      color: white;
+    }
+
+    .controls-line-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .controls-line-list {
+      display: flex;
+      justify-content: center;
+
+      .select-list {
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 1.2rem;
+      }
     }
   }
 

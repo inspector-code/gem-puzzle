@@ -20,15 +20,15 @@ export default class GemPuzzle {
     this.soundContainer = create('div', 'sound-container', [
       create('audio', null, null, null, ['src', audio]),
     ])
-    this.pauseMenu = create('div', 'pause-menu', 'Game paused')
-    this.pauseButton = create('button', 'pause-button', 'Pause')
-    this.resetButton = create('button', 'reset-button', 'Reset')
-    this.soundButton = create('button', 'sound-button', 'Sound Off')
-    this.saveButton = create('button', 'save-button', 'Save')
-    this.loadButton = create('button', 'load-button', 'Load')
-    this.scoreButton = create('button', 'score-button', 'Score')
-    this.displayTime = create('div', 'timer', '00:00')
-    this.displayMoves = create('div', 'moves', '0')
+    this.pauseMenu = create('div', 'pause-menu', create('div', 'pause-menu-header', 'Game paused'))
+    this.pauseButton = create('button', 'common-button', 'Pause')
+    this.resetButton = create('button', 'common-button', 'Reset')
+    this.soundButton = create('button', 'common-button', 'Off sound')
+    this.saveButton = create('button', 'common-button', 'Save')
+    this.loadButton = create('button', 'common-button', 'Load')
+    this.scoreButton = create('button', 'common-button', 'Score')
+    this.displayTime = create('div', 'timer', 'Time: 00:00')
+    this.displayMoves = create('div', 'moves', '0 moves')
     this.selectList = create('select', 'select-list', [
       create('option', null, '3x3', null, ['value', '8']),
       create('option', null, '4x4', null, ['value', '15'], ['selected', 'selected']),
@@ -111,7 +111,11 @@ export default class GemPuzzle {
       cell.style.left = `${left * this.cellSize}%`
       cell.style.top = `${top * this.cellSize}%`
 
+      cell.classList.add('cell-hidden')
       this.field.append(cell)
+      setInterval(() => {
+        cell.classList.remove('cell-hidden')
+      }, 70)
 
       cell.onclick = () => {
         this.move(i)
@@ -162,7 +166,7 @@ export default class GemPuzzle {
       .every((c) => c.value === ((c.top * Math.sqrt(this.fieldSize + 1) + c.left) + 1))
 
     this.movesCounter += 1
-    this.displayMoves.innerText = this.movesCounter
+    this.displayMoves.innerText = `${this.movesCounter} moves`
 
     if (isFinished) {
       this.pauseButton.setAttribute('disabled', 'disabled')
@@ -204,14 +208,14 @@ export default class GemPuzzle {
       }
       if (this.sec < 10) {
         if (this.min < 10) {
-          this.displayTime.innerText = `0${this.min}:0${this.sec}`
+          this.displayTime.innerText = `Time: 0${this.min}:0${this.sec}`
         } else {
-          this.displayTime.innerText = `${this.min}:0${this.sec}`
+          this.displayTime.innerText = `Time:${this.min}:0${this.sec}`
         }
       } else if (this.min < 10) {
-        this.displayTime.innerText = `0${this.min}:${this.sec}`
+        this.displayTime.innerText = `Time: 0${this.min}:${this.sec}`
       } else {
-        this.displayTime.innerText = `${this.min}:${this.sec}`
+        this.displayTime.innerText = `Time: ${this.min}:${this.sec}`
       }
     }
 
@@ -227,8 +231,8 @@ export default class GemPuzzle {
     this.min = 0
     this.sec = 0
     this.movesCounter = 0
-    this.displayMoves.innerText = '0'
-    this.displayTime.innerText = '00:00'
+    this.displayMoves.innerText = '0 moves'
+    this.displayTime.innerText = 'Time: 00:00'
     this.timerOn = false
     this.timer()
     this.empty = {
@@ -247,7 +251,7 @@ export default class GemPuzzle {
     this.pauseButton.onclick = () => {
       if (this.timerOn) {
         this.timerOn = false
-        this.pauseButton.innerText = 'Resume'
+        this.pauseButton.innerText = 'Play!'
         this.pauseMenu.classList.add('menu-hidden')
         this.field.prepend(this.pauseMenu)
         setTimeout(() => {
@@ -274,10 +278,10 @@ export default class GemPuzzle {
     this.soundButton.onclick = () => {
       if (this.soundOn) {
         this.soundOn = false
-        this.soundButton.innerText = 'Sound On'
+        this.soundButton.innerText = 'On sound'
       } else {
         this.soundOn = true
-        this.soundButton.innerText = 'Sound Off'
+        this.soundButton.innerText = 'Off sound'
       }
     }
 
@@ -328,7 +332,11 @@ export default class GemPuzzle {
 
         this.field.innerHTML = ''
         this.cells.forEach(({ element }) => {
+          element.classList.add('cell-hidden')
           this.field.append(element)
+          setTimeout(() => {
+            element.classList.remove('cell-hidden')
+          }, 70)
         })
 
         const [min, sec, moves] = get('timeAndMoves')
@@ -339,7 +347,7 @@ export default class GemPuzzle {
         this.pauseButton.innerText = 'Pause'
         this.pauseButton.removeAttribute('disabled')
         this.movesCounter = moves
-        this.displayMoves.innerText = moves
+        this.displayMoves.innerText = `${moves} moves`
         this.selectList.value = this.fieldSize
       }
     }
@@ -375,12 +383,15 @@ export default class GemPuzzle {
     }
 
     this.container = create('div', 'gem-puzzle', [
-      create('div', 'header', 'Gem puzzle!'),
+      create('div', 'header', 'Gem-puzzle'),
       create('div', 'info', [this.displayTime, this.displayMoves]),
       this.field,
       create('div', 'controls', [
-        this.pauseButton, this.resetButton, this.soundButton, this.saveButton,
-        this.loadButton, this.scoreButton, this.selectList,
+        create('div', 'controls-line-buttons', [
+          this.pauseButton, this.resetButton, this.soundButton, this.saveButton,
+          this.loadButton, this.scoreButton,
+        ]),
+        create('div', 'controls-line-list', this.selectList),
       ]),
       this.soundContainer,
     ])
