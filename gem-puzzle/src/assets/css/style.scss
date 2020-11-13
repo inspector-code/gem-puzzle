@@ -1,6 +1,22 @@
 @import "~normalize.css";
 @import "resetcss";
 
+.unselectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.index {
+  z-index: 1000;
+}
+
+body {
+  background: url("../img/part.jpg") 50% 50%;
+}
+
 .gem-puzzle {
   max-width: 420px;
   padding: 0 10px;
@@ -41,7 +57,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: all .3s;
+      transition: .3s;
       cursor: pointer;
       background-size: 100% 100%;
       transform: scale(1) rotate(0);

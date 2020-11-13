@@ -96,7 +96,7 @@ export default class GemPuzzle {
 
     for (let i = 0; i <= this.fieldSize - 1; i += 1) {
       const value = this.numbers[i]
-      const cell = create('div', 'cell', `${value}`)
+      const cell = create('div', 'cell unselectable', `${value}`)
       cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
       cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
       cell.style.backgroundImage = `url(assets/img/${this.fieldSize + 1}/${this.randomImage}/${value}.jpg)`
@@ -123,6 +123,8 @@ export default class GemPuzzle {
       cell.onclick = () => {
         this.move(i)
       }
+
+      cell.onmousedown = this.drag
     }
 
     this.field.prepend(this.startMenu)
@@ -139,6 +141,29 @@ export default class GemPuzzle {
     }
 
     return this
+  }
+
+  drag = (e) => {
+    e.target.classList.add('index')
+    e.target.style.transition = '0s'
+
+    const mouseMove = (left, top) => {
+      e.target.style.left = `${left}%`
+      e.target.style.top = `${top}%`
+    }
+
+    this.field.onmousemove = (ev) => {
+      const left = ((ev.pageX - this.field.offsetLeft - e.offsetX) / this.field.clientWidth) * 100
+      const top = ((ev.pageY - this.field.offsetTop - e.offsetY) / this.field.clientHeight) * 100
+      mouseMove(left, top)
+    }
+
+    this.field.onmouseup = () => {
+      e.target.style.transition = '.3s'
+      e.target.classList.remove('index')
+      this.field.onmousemove = null
+      this.field.onmouseup = null
+    }
   }
 
   move = (index) => {
@@ -315,7 +340,7 @@ export default class GemPuzzle {
         const newCells = []
 
         savedCells.forEach((i, index) => {
-          const cell = create('div', 'cell', `${i.value}`)
+          const cell = create('div', 'cell unselectable', `${i.value}`)
           cell.style.left = `${i.left * this.cellSize}%`
           cell.style.top = `${i.top * this.cellSize}%`
           cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`

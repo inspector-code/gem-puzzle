@@ -35,9 +35,15 @@ const cssLoaders = (...extra) => {
       options: {
         hmr: isDev,
         reloadAll: true,
+        publicPath: '',
       },
     },
-    'css-loader',
+    {
+      loader: 'css-loader',
+      options: {
+        url: false,
+      },
+    },
   ]
 
   if (extra) {
