@@ -92,9 +92,8 @@ export default class GemPuzzle {
       cell.style.top = `${top * this.cellSize}%`
 
       cell.classList.add('cell-hidden')
-      const img = create('img', null, null, null,
-        ['src', `assets/img/background/${this.randomImage}.jpg`])
-      img.onload = () => {
+
+      const appendCells = () => {
         this.field.append(cell)
 
         setInterval(() => {
@@ -108,6 +107,16 @@ export default class GemPuzzle {
         cell.onmousedown = (event) => {
           this.drag(event, i)
         }
+      }
+
+      if (this.gameType === 'images') {
+        const img = create('img', null, null, null,
+          ['src', `assets/img/background/${this.randomImage}.jpg`])
+        img.onload = () => {
+          appendCells()
+        }
+      } else {
+        appendCells()
       }
     }
 
@@ -368,8 +377,6 @@ export default class GemPuzzle {
         this.gameType = get('gameType')
 
         const newCells = []
-        const img = create('img', null, null, null,
-          ['src', `assets/img/background/${this.randomImage}.jpg`])
 
         savedCells.forEach((i, index) => {
           const cell = create('div', 'cell unselectable', `${this.gameType === 'images' ? '' : i.value}`)
@@ -394,7 +401,8 @@ export default class GemPuzzle {
         this.cells = newCells
 
         this.field.innerHTML = ''
-        img.onload = () => {
+
+        const appendCells = () => {
           this.cells.forEach(({ element }) => {
             element.classList.add('cell-hidden')
             this.field.append(element)
@@ -402,6 +410,16 @@ export default class GemPuzzle {
               element.classList.remove('cell-hidden')
             }, 70)
           })
+        }
+
+        if (this.gameType === 'images') {
+          const img = create('img', null, null, null,
+            ['src', `assets/img/background/${this.randomImage}.jpg`])
+          img.onload = () => {
+            appendCells()
+          }
+        } else {
+          appendCells()
         }
 
         const [min, sec, moves] = get('timeAndMoves')
