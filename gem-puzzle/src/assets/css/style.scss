@@ -20,13 +20,13 @@ body {
 .gem-puzzle {
   max-width: 420px;
   padding: 0 10px;
-  margin: 0 auto;
+  margin: 20px auto;
 
   .header {
     font-family: 'Monoton', cursive;
     font-size: 2.5rem;
     text-align: center;
-    margin: 20px 0;
+    margin-bottom: 20px;
   }
 
   .info {
@@ -48,8 +48,7 @@ body {
 
     .cell {
       font-family: 'Quicksand', sans-serif;
-      color: white;
-      text-shadow: 0 0 2px black;
+      color: black;
       border: 2px solid white;
       border-radius: 5px;
       position: absolute;
@@ -61,6 +60,20 @@ body {
       cursor: pointer;
       background-size: 100% 100%;
       transform: scale(1) rotate(0);
+    }
+
+    .finished-image {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      line-height: 0;
+      z-index: 50;
+      opacity: 1;
+      transition: 1s;
+    }
+
+    .finished-image-hide {
+      opacity: 0;
     }
 
     .finish-menu-header {
@@ -217,6 +230,10 @@ body {
         outline: none;
         font-size: 1.2rem;
         cursor: pointer;
+      }
+
+      .select-list + .select-list {
+        margin-left: 10px;
       }
     }
   }
