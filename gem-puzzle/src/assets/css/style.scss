@@ -76,7 +76,7 @@ body {
       opacity: 0;
     }
 
-    .finish-menu-header {
+    .finish-menu-header, .loose-menu-header {
       font-family: 'Monoton', cursive;
       color: white;
       font-size: 2rem;
@@ -118,7 +118,7 @@ body {
       }
     }
 
-    .score-menu-button, .finish-menu-button {
+    .score-menu-button, .finish-menu-button, .loose-menu-button {
       font-family: 'Monoton', cursive;
       font-size: 1.6rem;
       color: yellow;
@@ -177,12 +177,12 @@ body {
       }
     }
 
-    .start-menu-button:hover, .score-menu-button:hover, .finish-menu-button:hover {
+    .start-menu-button:hover, .score-menu-button:hover, .finish-menu-button:hover, .loose-menu-button:hover {
       transform: scale(0.8);
       color: white;
     }
 
-    .start-menu-button:active, .score-menu-button:active, .finish-menu-button:active {
+    .start-menu-button:active, .score-menu-button:active, .finish-menu-button:active, .loose-menu-button:active {
       opacity: 0;
     }
   }

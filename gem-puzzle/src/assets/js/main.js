@@ -1,7 +1,6 @@
 import create from './utils/create'
 import { get, set } from './utils/storage'
 import audio from '../sounds/chpok.mp3'
-import generateArray from './generate-array'
 import setBg from './set-background'
 
 export default class GemPuzzle {
@@ -12,7 +11,11 @@ export default class GemPuzzle {
     this.finishMenu = create('div', 'menu', [
       create('div', 'finish-menu-header', 'VICTORY'),
       create('div', 'finish-menu-item'),
-      create('div', 'finish-menu-button', 'OK'),
+      create('div', 'finish-menu-button', 'Ok'),
+    ])
+    this.looseMenu = create('div', 'menu', [
+      create('div', 'loose-menu-header', 'You&nbsp;&nbsp;&nbsp;loose'),
+      create('div', 'loose-menu-button', 'Try&nbsp;&nbsp;&nbsp;again'),
     ])
     this.scoreMenu = create('div', 'score-menu', [
       create('div', 'score-menu-header', 'Score'),
@@ -29,6 +32,7 @@ export default class GemPuzzle {
     this.saveButton = create('button', 'common-button', 'Save')
     this.loadButton = create('button', 'common-button', 'Load')
     this.scoreButton = create('button', 'common-button', 'Score')
+    this.finishButton = create('button', 'common-button', 'Finish')
     this.displayTime = create('div', 'timer', [
       create('span', 'timer-text', 'Time: '),
       create('span', 'timer-digits', '00:00'),
@@ -64,15 +68,19 @@ export default class GemPuzzle {
     this.randomImage = null
     this.score = get('score') || []
     this.gameType = 'images'
+    this.gameKey = []
   }
 
   generateField() {
-    this.numbers = generateArray(this.fieldSize)
+    this.gameKey = []
     this.field.innerHTML = ''
     this.randomImage = Math.floor(Math.random() * 150) + 1
+    const randomArray = [...Array(35 * this.fieldSize).keys()]
+      .map(() => Math.floor(Math.random() * this.fieldSize))
+      .filter((item, index, array) => item !== array[index + 1])
 
     for (let i = 0; i <= this.fieldSize - 1; i += 1) {
-      const value = this.numbers[i]
+      const value = i + 1
       const cell = create('div', 'cell unselectable', `${this.gameType === 'images' ? '' : value}`)
       cell.style.height = `${100 / Math.sqrt(this.fieldSize + 1)}%`
       cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
@@ -101,7 +109,8 @@ export default class GemPuzzle {
         }, 70)
 
         cell.onclick = () => {
-          this.move(i)
+          this.move(i, 'player')
+          this.isFinished('victory')
         }
 
         cell.onmousedown = (event) => {
@@ -120,8 +129,11 @@ export default class GemPuzzle {
       }
     }
 
+    randomArray.forEach((item) => this.move(item, 'computer'))
+
     this.field.prepend(this.startMenu)
     this.pauseButton.setAttribute('disabled', 'disabled')
+    this.finishButton.setAttribute('disabled', 'disabled')
     this.startMenu.children[0].onclick = () => {
       this.timerOn = true
       this.timer()
@@ -131,6 +143,7 @@ export default class GemPuzzle {
         this.startMenu.classList.remove('menu-hidden')
       }, 500)
       this.pauseButton.removeAttribute('disabled')
+      this.finishButton.removeAttribute('disabled')
     }
 
     return this
@@ -178,13 +191,17 @@ export default class GemPuzzle {
     }
   }
 
-  move = (index) => {
+  move = (index, moveMode) => {
     const cell = this.cells[index]
     const leftDiff = Math.abs(this.empty.left - cell.left)
     const topDiff = Math.abs(this.empty.top - cell.top)
 
     if (leftDiff + topDiff > 1) {
       return
+    }
+
+    if (moveMode !== 'autocomplete') {
+      this.gameKey.push(index)
     }
 
     cell.element.style.left = `${this.empty.left * this.cellSize}%`
@@ -200,16 +217,20 @@ export default class GemPuzzle {
     this.field.onmousemove = null
     this.field.onmouseup = null
 
-    if (this.soundOn) {
-      this.soundContainer.children[0].play()
-      this.soundContainer.children[0].currentTime = 0
-    }
+    if (moveMode === 'player') {
+      if (this.soundOn) {
+        this.soundContainer.children[0].play()
+        this.soundContainer.children[0].currentTime = 0
+      }
 
+      this.movesCounter += 1
+      this.displayMoves.innerText = `${this.movesCounter} moves`
+    }
+  }
+
+  isFinished(finishType) {
     const isFinished = this.cells
       .every((c) => c.value === ((c.top * Math.sqrt(this.fieldSize + 1) + c.left) + 1))
-
-    this.movesCounter += 1
-    this.displayMoves.innerText = `${this.movesCounter} moves`
 
     if (isFinished) {
       if (this.gameType === 'images') {
@@ -223,26 +244,42 @@ export default class GemPuzzle {
       this.pauseButton.setAttribute('disabled', 'disabled')
       this.timerOn = false
       this.timer()
-      this.finishMenu.classList.add('menu-hidden')
-      this.field.prepend(this.finishMenu)
-      setTimeout(() => {
-        this.finishMenu.classList.remove('menu-hidden')
-      }, 50)
-      this.finishMenu.children[1].innerText = `Time: ${this.displayTime.children[1].innerText}, moves: ${this.movesCounter}`
 
-      this.score.push({
-        game: `${this.gameType} ${Math.sqrt(+this.selectList.value + 1)}x${Math.sqrt(+this.selectList.value + 1)}`,
-        displayTime: this.displayTime.children[1].innerText,
-        moves: this.movesCounter,
-        score: ((this.min * 60) + this.sec) * this.movesCounter,
-      })
-      set('score', this.score)
+      if (finishType === 'victory') {
+        this.finishMenu.classList.add('menu-hidden')
+        this.field.prepend(this.finishMenu)
+        setTimeout(() => {
+          this.finishMenu.classList.remove('menu-hidden')
+        }, 50)
+        this.finishMenu.children[1].innerText = `Time: ${this.displayTime.children[1].innerText}, moves: ${this.movesCounter}`
 
-      this.finishMenu.children[2].onclick = () => {
-        this.pauseButton.removeAttribute('disabled')
-        this.finishMenu.remove()
-        this.clear()
-        this.generateField()
+        this.score.push({
+          game: `${this.gameType} ${Math.sqrt(+this.selectList.value + 1)}x${Math.sqrt(+this.selectList.value + 1)}`,
+          displayTime: this.displayTime.children[1].innerText,
+          moves: this.movesCounter,
+          score: ((this.min * 60) + this.sec) * this.movesCounter,
+        })
+        set('score', this.score)
+
+        this.finishMenu.children[2].onclick = () => {
+          this.pauseButton.removeAttribute('disabled')
+          this.finishMenu.remove()
+          this.clear()
+          this.generateField()
+        }
+      } else {
+        this.looseMenu.classList.add('menu-hidden')
+        this.field.prepend(this.looseMenu)
+        setTimeout(() => {
+          this.looseMenu.classList.remove('menu-hidden')
+        }, 50)
+
+        this.looseMenu.children[1].onclick = () => {
+          this.pauseButton.removeAttribute('disabled')
+          this.looseMenu.remove()
+          this.clear()
+          this.generateField()
+        }
       }
     }
   }
@@ -294,6 +331,7 @@ export default class GemPuzzle {
     this.cells = []
     this.pauseButton.innerText = 'Pause'
     this.cellSize = 100 / Math.sqrt(this.fieldSize + 1)
+    this.gameKey = []
   }
 
   init() {
@@ -358,6 +396,7 @@ export default class GemPuzzle {
       set('randomImage', this.randomImage)
       set('gameType', this.gameType)
       this.loadButton.removeAttribute('disabled')
+      set('gameKey', this.gameKey)
     }
 
     if (get('cells')) {
@@ -374,6 +413,7 @@ export default class GemPuzzle {
         this.cellSize = 100 / Math.sqrt(this.fieldSize + 1)
         this.randomImage = get('randomImage')
         this.gameType = get('gameType')
+        this.gameKey = get('gameKey')
 
         const newCells = []
 
@@ -428,6 +468,7 @@ export default class GemPuzzle {
         this.timer()
         this.pauseButton.innerText = 'Pause'
         this.pauseButton.removeAttribute('disabled')
+        this.finishButton.removeAttribute('disabled')
         this.movesCounter = moves
         this.displayMoves.innerText = `${moves} moves`
         this.selectList.value = this.fieldSize
@@ -466,6 +507,41 @@ export default class GemPuzzle {
       }
     }
 
+    this.finishButton.onclick = () => {
+      if (this.gameKey.length !== 0) {
+        const key = this.gameKey.reverse()
+
+        this.pauseButton.setAttribute('disabled', 'disabled')
+        this.resetButton.setAttribute('disabled', 'disabled')
+        this.saveButton.setAttribute('disabled', 'disabled')
+        this.loadButton.setAttribute('disabled', 'disabled')
+        this.finishButton.setAttribute('disabled', 'disabled')
+        this.timerOn = false
+        this.timer()
+
+        const finished = () => {
+          this.pauseButton.removeAttribute('disabled')
+          this.resetButton.removeAttribute('disabled')
+          this.saveButton.removeAttribute('disabled')
+          this.loadButton.removeAttribute('disabled')
+          this.finishButton.removeAttribute('disabled')
+          this.gameKey = []
+          this.isFinished('loose')
+        }
+
+        for (let i = 0; i < key.length; i += 1) {
+          ((n) => {
+            setTimeout(() => {
+              this.move(key[n], 'autocomplete')
+              if (i === key.length - 1) {
+                finished()
+              }
+            }, 150 * n)
+          })(i)
+        }
+      }
+    }
+
     this.container = create('div', 'gem-puzzle', [
       create('div', 'header', 'Gem-puzzle'),
       create('div', 'info', [this.displayTime, this.displayMoves]),
@@ -473,7 +549,7 @@ export default class GemPuzzle {
       create('div', 'controls', [
         create('div', 'controls-line-buttons', [
           this.pauseButton, this.resetButton, this.soundButton, this.saveButton,
-          this.loadButton, this.scoreButton,
+          this.loadButton, this.scoreButton, this.finishButton,
         ]),
         create('div', 'controls-line-list', [this.selectGameType, this.selectList]),
       ]),
