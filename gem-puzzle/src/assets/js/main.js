@@ -164,7 +164,7 @@ export default class GemPuzzle {
         setTimeout(() => {
           cell.element.classList.remove('index')
         }, 300)
-        this.move(ind)
+        this.move(ind, 'player')
       }
 
       const mouseMove = (left, top) => {
@@ -425,7 +425,7 @@ export default class GemPuzzle {
           cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
           setBg(cell, i.value, this.gameType, this.fieldSize, this.randomImage)
           cell.onclick = () => {
-            this.move(index)
+            this.move(index, 'player')
           }
           cell.onmousedown = (event) => {
             this.drag(event, index)
