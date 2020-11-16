@@ -190,8 +190,7 @@ export default class GemPuzzle {
     cell.element.style.left = `${this.empty.left * this.cellSize}%`
     cell.element.style.top = `${this.empty.top * this.cellSize}%`
 
-    const emptyLeft = this.empty.left
-    const emptyTop = this.empty.top
+    const [emptyLeft, emptyTop] = [this.empty.left, this.empty.top]
     this.empty.left = cell.left
     this.empty.top = cell.top
     cell.left = emptyLeft
@@ -444,7 +443,8 @@ export default class GemPuzzle {
         scoreArray.sort((a, b) => (a.score > b.score ? 1 : -1))
         scoreArray.splice(10)
         scoreArray.forEach(({ game, displayTime, moves }) => {
-          const element = create('div', 'score-item', `<b>Game:</b> ${game}, <b>time:</b> ${displayTime}, <b>moves:</b> ${moves}`)
+          const element = create('div', 'score-item',
+            `<b>Game:</b> ${game}, <b>time:</b> ${displayTime}, <b>moves:</b> ${moves}`)
           this.scoreMenu.children[1].append(element)
         })
       } else {
