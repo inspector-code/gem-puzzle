@@ -2,6 +2,7 @@ import create from './utils/create'
 import { get, set } from './utils/storage'
 import audio from '../sounds/chpok.mp3'
 import setBg from './set-background'
+import sortKey from './sort-array'
 
 export default class GemPuzzle {
   constructor(fieldSize) {
@@ -75,7 +76,7 @@ export default class GemPuzzle {
     this.gameKey = []
     this.field.innerHTML = ''
     this.randomImage = Math.floor(Math.random() * 150) + 1
-    const randomArray = [...Array(35 * this.fieldSize).keys()]
+    const randomArray = [...Array(60 * this.fieldSize).keys()]
       .map(() => Math.floor(Math.random() * this.fieldSize))
       .filter((item, index, array) => item !== array[index + 1])
 
@@ -509,7 +510,8 @@ export default class GemPuzzle {
 
     this.finishButton.onclick = () => {
       if (this.gameKey.length !== 0) {
-        const key = this.gameKey.reverse()
+        const arr = [...this.gameKey].reverse()
+        const result = sortKey(arr, 7)
 
         this.pauseButton.setAttribute('disabled', 'disabled')
         this.resetButton.setAttribute('disabled', 'disabled')
@@ -529,11 +531,11 @@ export default class GemPuzzle {
           this.isFinished('loose')
         }
 
-        for (let i = 0; i < key.length; i += 1) {
+        for (let i = 0; i < result.length; i += 1) {
           ((n) => {
             setTimeout(() => {
-              this.move(key[n], 'autocomplete')
-              if (i === key.length - 1) {
+              this.move(result[n], 'autocomplete')
+              if (i === result.length - 1) {
                 finished()
               }
             }, 150 * n)
