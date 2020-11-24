@@ -4,11 +4,18 @@ import audio from '../sounds/chpok.mp3'
 import setBg from './set-background'
 import sortKey from './sort-array'
 
+const PLAYER = 'player'
+const VICTORY = 'victory'
+const AUTOCOMPLETE = 'autocomplete'
+const LOOSE = 'loose'
+const COMPUTER = 'computer'
+
 export default class GemPuzzle {
   constructor(fieldSize) {
     // Elements
     this.field = create('div', 'field')
-    this.startMenu = create('div', 'menu', create('div', 'start-menu-button', 'START'))
+    this.startMenu = create('div', 'menu',
+      create('div', 'start-menu-button', 'START'))
     this.finishMenu = create('div', 'menu', [
       create('div', 'finish-menu-header', 'VICTORY'),
       create('div', 'finish-menu-item'),
@@ -23,7 +30,8 @@ export default class GemPuzzle {
       create('div', 'score-menu-container'),
       create('div', 'score-menu-button', 'Ok'),
     ])
-    this.pauseMenu = create('div', 'menu', create('div', 'pause-menu-header', 'Game Paused'))
+    this.pauseMenu = create('div', 'menu',
+      create('div', 'pause-menu-header', 'Game Paused'))
     this.soundContainer = create('div', 'sound-container', [
       create('audio', null, null, null, ['src', audio]),
     ])
@@ -41,14 +49,16 @@ export default class GemPuzzle {
     this.displayMoves = create('div', 'moves', '0 moves')
     this.selectList = create('select', 'select-list', [
       create('option', null, '3x3', null, ['value', '8']),
-      create('option', null, '4x4', null, ['value', '15'], ['selected', 'selected']),
+      create('option', null, '4x4', null, ['value', '15'],
+        ['selected', 'selected']),
       create('option', null, '5x5', null, ['value', '24']),
       create('option', null, '6x6', null, ['value', '35']),
       create('option', null, '7x7', null, ['value', '48']),
       create('option', null, '8x8', null, ['value', '63']),
     ])
     this.selectGameType = create('select', 'select-list', [
-      create('option', null, 'Images', null, ['value', 'images'], ['selected', 'selected']),
+      create('option', null, 'Images', null, ['value', 'images'],
+        ['selected', 'selected']),
       create('option', null, 'Digits', null, ['value', 'digits']),
     ])
 
@@ -105,13 +115,13 @@ export default class GemPuzzle {
       const appendCells = () => {
         this.field.append(cell)
 
-        setInterval(() => {
+        setTimeout(() => {
           cell.classList.remove('cell-hidden')
         }, 70)
 
         cell.onclick = () => {
-          this.move(i, 'player')
-          this.isFinished('victory')
+          this.move(i, PLAYER)
+          this.isFinished(VICTORY)
         }
 
         cell.onmousedown = (event) => {
@@ -130,12 +140,13 @@ export default class GemPuzzle {
       }
     }
 
-    randomArray.forEach((item) => this.move(item, 'computer'))
+    randomArray.forEach((item) => this.move(item, COMPUTER))
 
     this.field.prepend(this.startMenu)
     this.pauseButton.setAttribute('disabled', 'disabled')
     this.finishButton.setAttribute('disabled', 'disabled')
-    this.startMenu.children[0].onclick = () => {
+    const startButton = this.startMenu.children[0]
+    startButton.onclick = () => {
       this.timerOn = true
       this.timer()
       this.startMenu.classList.add('menu-hidden')
@@ -165,7 +176,7 @@ export default class GemPuzzle {
         setTimeout(() => {
           cell.element.classList.remove('index')
         }, 300)
-        this.move(ind, 'player')
+        this.move(ind, PLAYER)
       }
 
       const mouseMove = (left, top) => {
@@ -174,10 +185,15 @@ export default class GemPuzzle {
       }
 
       this.field.onmousemove = (e) => {
+        const {
+          clientWidth, offsetLeft, clientLeft, offsetTop, clientTop, clientHeight,
+        } = this.field
+        const { offsetX, offsetY } = ev
+        const { pageX, pageY } = e
         // eslint-disable-next-line max-len
-        const left = ((e.pageX - this.field.offsetLeft - ev.offsetX - this.field.clientLeft - ev.target.clientLeft) / this.field.clientWidth) * 100
+        const left = ((pageX - offsetLeft - offsetX - clientLeft - ev.target.clientLeft) / clientWidth) * 100
         // eslint-disable-next-line max-len
-        const top = ((e.pageY - this.field.offsetTop - ev.offsetY - this.field.clientTop - ev.target.clientTop) / this.field.clientHeight) * 100
+        const top = ((pageY - offsetTop - offsetY - clientTop - ev.target.clientTop) / clientHeight) * 100
         mouseMove(left, top)
       }
 
@@ -201,7 +217,7 @@ export default class GemPuzzle {
       return
     }
 
-    if (moveMode !== 'autocomplete') {
+    if (moveMode !== AUTOCOMPLETE) {
       this.gameKey.push(index)
     }
 
@@ -218,10 +234,11 @@ export default class GemPuzzle {
     this.field.onmousemove = null
     this.field.onmouseup = null
 
-    if (moveMode === 'player') {
+    if (moveMode === PLAYER) {
       if (this.soundOn) {
-        this.soundContainer.children[0].play()
-        this.soundContainer.children[0].currentTime = 0
+        const moveSound = this.soundContainer.children[0]
+        moveSound.play()
+        moveSound.currentTime = 0
       }
 
       this.movesCounter += 1
@@ -246,13 +263,14 @@ export default class GemPuzzle {
       this.timerOn = false
       this.timer()
 
-      if (finishType === 'victory') {
+      if (finishType === VICTORY) {
         this.finishMenu.classList.add('menu-hidden')
         this.field.prepend(this.finishMenu)
         setTimeout(() => {
           this.finishMenu.classList.remove('menu-hidden')
         }, 50)
-        this.finishMenu.children[1].innerText = `Time: ${this.displayTime.children[1].innerText}, moves: ${this.movesCounter}`
+        const finishMenuText = this.finishMenu.children[1]
+        finishMenuText.innerText = `Time: ${this.displayTime.children[1].innerText}, moves: ${this.movesCounter}`
 
         this.score.push({
           game: `${this.gameType} ${Math.sqrt(+this.selectList.value + 1)}x${Math.sqrt(+this.selectList.value + 1)}`,
@@ -262,7 +280,8 @@ export default class GemPuzzle {
         })
         set('score', this.score)
 
-        this.finishMenu.children[2].onclick = () => {
+        const finishButton = this.finishMenu.children[2]
+        finishButton.onclick = () => {
           this.pauseButton.removeAttribute('disabled')
           this.finishMenu.remove()
           this.clear()
@@ -275,7 +294,8 @@ export default class GemPuzzle {
           this.looseMenu.classList.remove('menu-hidden')
         }, 50)
 
-        this.looseMenu.children[1].onclick = () => {
+        const looseButton = this.looseMenu.children[1]
+        looseButton.onclick = () => {
           this.pauseButton.removeAttribute('disabled')
           this.looseMenu.remove()
           this.clear()
@@ -321,7 +341,8 @@ export default class GemPuzzle {
     this.sec = 0
     this.movesCounter = 0
     this.displayMoves.innerText = '0 moves'
-    this.displayTime.children[1].innerText = '00:00'
+    const displayTimeField = this.displayTime.children[1]
+    displayTimeField.innerText = '00:00'
     this.timerOn = false
     this.timer()
     this.empty = {
@@ -426,7 +447,7 @@ export default class GemPuzzle {
           cell.style.width = `${100 / Math.sqrt(this.fieldSize + 1)}%`
           setBg(cell, i.value, this.gameType, this.fieldSize, this.randomImage)
           cell.onclick = () => {
-            this.move(index, 'player')
+            this.move(index, PLAYER)
           }
           cell.onmousedown = (event) => {
             this.drag(event, index)
@@ -478,7 +499,8 @@ export default class GemPuzzle {
     }
 
     this.scoreButton.onclick = () => {
-      this.scoreMenu.children[1].innerHTML = ''
+      const scoreContent = this.scoreMenu.children[1]
+      scoreContent.innerHTML = ''
       const scoreArray = get('score')
 
       if (scoreArray) {
@@ -487,10 +509,10 @@ export default class GemPuzzle {
         scoreArray.forEach(({ game, displayTime, moves }) => {
           const element = create('div', 'score-item',
             `<b>Game:</b> ${game}, <b>time:</b> ${displayTime}, <b>moves:</b> ${moves}`)
-          this.scoreMenu.children[1].append(element)
+          scoreContent.append(element)
         })
       } else {
-        this.scoreMenu.children[1].innerText = 'No winners yet :('
+        scoreContent.innerText = 'No winners yet :('
       }
 
       this.scoreMenu.classList.add('menu-hidden')
@@ -499,7 +521,8 @@ export default class GemPuzzle {
         this.scoreMenu.classList.remove('menu-hidden')
       }, 50)
 
-      this.scoreMenu.children[2].onclick = () => {
+      const scoreButton = this.scoreMenu.children[2]
+      scoreButton.onclick = () => {
         this.scoreMenu.classList.add('menu-hidden')
         setTimeout(() => {
           this.scoreMenu.remove()
@@ -528,13 +551,13 @@ export default class GemPuzzle {
           this.loadButton.removeAttribute('disabled')
           this.finishButton.removeAttribute('disabled')
           this.gameKey = []
-          this.isFinished('loose')
+          this.isFinished(LOOSE)
         }
 
         for (let i = 0; i < result.length; i += 1) {
           ((n) => {
             setTimeout(() => {
-              this.move(result[n], 'autocomplete')
+              this.move(result[n], AUTOCOMPLETE)
               if (i === result.length - 1) {
                 finished()
               }
